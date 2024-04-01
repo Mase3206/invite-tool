@@ -1,0 +1,10 @@
+authentik:
+  # do not include "https".
+  url: 
+  key: 
+
+twingate:
+  use: 
+  # just the subdomain, as in "example" from "example.twingate.com"
+  network: 
+  key: 

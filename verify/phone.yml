@@ -1,0 +1,25 @@
+# length does not include country code or '+'
+
+- code: '1'
+  countries: ['us', 'ca']
+  length: 10
+  grouping: [3, 3, 4]  # xxx-xxx-xxxx
+  divider: '-'
+
+- code: '44'
+  countries: ['gb', 'gg', 'je', 'im']
+  length: 10
+  grouping: [2, 4, 4]  # xx xxxx xxxx
+  divider: ' '
+
+- code: '30'
+  countries: ['gr']
+  length: 10
+  grouping: [3, 4, 3]  # xxx xxxx xxx
+  divider: ' '
+
+- code: '31'
+  countries: ['nl']
+  length: 9
+  grouping: [4, 6]  # xxxx xxxxxx
+  divider: ' '

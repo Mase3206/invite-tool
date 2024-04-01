@@ -162,3 +162,9 @@ cython_debug/
 # ignore macOS metadata files
 **.DS_Store**
 **._.DS_Store**
+
+
+
+# invite-tool specific user config files
+conf.yml
+!conf-default.yml
