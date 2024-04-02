@@ -23,16 +23,8 @@ configuration = ac.Configuration(
 
 configuration.api_key['authentik'] = authConf['key']
 
-# configuration = ac.Configuration(
-# 	host = f'http://auth.noahsroberts.com/api/v3', 
-# 	api_key = {
-# 		'authentik': "Z6f566LMASPbG6hZ4QhqxBfFZuvZZCVwi2cCpX4AqgchXhiawns974kY5cdq"
-# 	}
-# )
 
-# configuration.api_key['authentik'] = "Z6f566LMASPbG6hZ4QhqxBfFZuvZZCVwi2cCpX4AqgchXhiawns974kY5cdq"
 
-# root API object
 APIClient = ac.ApiClient(configuration)
 
 # create API objects for each API classification
@@ -95,7 +87,6 @@ def fetchInviteFlows() -> list[Flow]:
 
 def shiftDate(ref: datetime, days: int) -> datetime:	
 	return ref + datetime.timedelta(days=days)
-
 
 
 
