@@ -1,2 +1,3 @@
 pyyaml
 authentik_client
+django
