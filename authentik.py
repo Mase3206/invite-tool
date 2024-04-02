@@ -9,7 +9,7 @@ with open('conf.yml', 'r') as f1:
 
 # configure API client
 configuration = ac.Configuration(
-	host = f'http://{authConf['url']}/api/v3', 
+	host = f'https://{authConf['url']}/api/v3', 
 	api_key = {
 		'authentik': authConf['key']
 	}
@@ -56,9 +56,19 @@ core = ac.CoreApi(APIClient)
 def fetchGroupList():
 	# grab results section of the raw ouput
 	raw = core.core_groups_list().results
+
 	# make a list of all the group names
-	groups = [a.name for a in raw]
+	groups = [g.name for g in raw]
+	# print(groups)
 	return groups
 
-def fetchUsers():
-	return list(core.core_users_list())
+
+
+def fetchUserList():
+	# grab results section of the raw ouput
+	raw = core.core_users_list().results
+
+	# make a list of usernames from the authentik_client.User object
+	users = [u.username for u in raw]
+	# print(users)
+	return users

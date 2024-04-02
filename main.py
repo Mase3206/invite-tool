@@ -5,6 +5,10 @@ import twingate
 
 
 
+class ExistsError(Exception):
+	pass
+
+
 
 class User:
 	"""
@@ -26,24 +30,36 @@ class User:
 	"""
 
 	def __init__(self, firstName: str, lastName: str, email: str, groups: list, phone='', username=''):
+		knownUsers = authentik.fetchUserList()
+		self.username = firstName.lower()[0] + lastName.lower() if username == '' else username.lower()
+		print(f'this {self.username}')
+		if self.username in knownUsers:
+			raise ExistsError(f'User {self.username} already exists.')
+
+
 		self.first = firstName
 		self.last = lastName
 
-		self.username = firstName.lower()[0] + lastName.lower() if username == '' else username.lower()
-		
 		knownGroups = authentik.fetchGroupList()
-		print(knownGroups)
 		for group in groups:
 			if group not in knownGroups:
 				print(f'Unknown group {group}. Removing from list.')
-		# 		groups.remove(group)
+				groups.remove(group)
 		self.groups = groups
 
-		# if e.check(email):
-		# 	self.email = email
+		if e.check(email):
+			self.email = email
 		
-		# phoneRegion = p.findMatch(phone)
-		# self.phone = p.formatPretty(phone, phoneRegion)
+		if phone != '':
+			phoneRegion = p.findMatch(phone)
+			self.phone = p.formatPretty(phone, phoneRegion)
 
-	
-noah = User('Noah', 'Roberts', 'noah10838@gmail.com', ['user', 'admin'])
+
+
+def _test():
+	noah = User('Noah', 'Roberts', 'noah10838@gmail.com', ['user', 'admin'], phone='14062173981')
+
+
+
+if __name__ == '__main__':
+	_test()
