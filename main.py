@@ -32,7 +32,7 @@ class User:
 	def __init__(self, firstName: str, lastName: str, email: str, groups: list, phone='', username=''):
 		knownUsers = authentik.fetchUserList()
 		self.username = firstName.lower()[0] + lastName.lower() if username == '' else username.lower()
-		print(f'this {self.username}')
+		# print(f'this {self.username}')
 		if self.username in knownUsers:
 			raise ExistsError(f'User {self.username} already exists.')
 
@@ -53,11 +53,26 @@ class User:
 		if phone != '':
 			phoneRegion = p.findMatch(phone)
 			self.phone = p.formatPretty(phone, phoneRegion)
+		
+	
+
+	def createAuthInviteData(self) -> dict:
+		return {
+			'name': f'{self.first} {self.last}',
+			'username': self.username,
+			'email': self.email,
+			'phone': self.phone,
+			'groups_to_add': self.groups
+		}
 
 
 
 def _test():
-	noah = User('Noah', 'Roberts', 'noah10838@gmail.com', ['user', 'admin'], phone='14062173981')
+	# testuser = User('Test', 'User', 'testuser@example.com', ['testing'], phone='10000000000')
+	# print(testuser.createAuthInviteData())
+	# authentik.createInvite(testuser)
+
+	authentik.fetchInviteFlows()[0].pk
 
 
 

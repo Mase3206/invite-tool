@@ -1,6 +1,12 @@
-import fastapi
 import authentik_client as ac
+from authentik_client.models.invitation_request import InvitationRequest
+from authentik_client.models.flow import Flow
+from authentik_client.models.flow_designation_enum import FlowDesignationEnum
 import yaml
+import datetime
+
+from main import User
+import pickle
 
 
 # get configuration for authentik instance from conf.yml
@@ -36,7 +42,7 @@ core = ac.CoreApi(APIClient)
 # crypto = ac.CryptoApi(APIClient)
 # enterprise = ac.EnterpriseApi(APIClient)
 # events = ac.EventsApi(APIClient)
-# flows = ac.FlowsApi(APIClient)
+flows = ac.FlowsApi(APIClient)
 # managed = ac.ManagedApi(APIClient)
 # oauth2 = ac.Oauth2Api(APIClient)
 # outposts = ac.OutpostsApi(APIClient)
@@ -48,12 +54,12 @@ core = ac.CoreApi(APIClient)
 # root = ac.RootApi(APIClient)
 # schema = ac.SchemaApi(APIClient)
 # sources = ac.SourcesApi(APIClient)
-# stages = ac.StagesApi(APIClient)
+stages = ac.StagesApi(APIClient)
 # tenants = ac.TenantsApi(APIClient)
 
 
 
-def fetchGroupList():
+def fetchGroupList() -> list[str]:
 	# grab results section of the raw ouput
 	raw = core.core_groups_list().results
 
@@ -64,7 +70,7 @@ def fetchGroupList():
 
 
 
-def fetchUserList():
+def fetchUserList() -> list[str]:
 	# grab results section of the raw ouput
 	raw = core.core_users_list().results
 
@@ -72,3 +78,40 @@ def fetchUserList():
 	users = [u.username for u in raw]
 	# print(users)
 	return users
+
+
+
+def fetchInviteFlows() -> list[Flow]:
+	raw: list[Flow] = flows.flows_instances_list().results
+	enrollmentFlows = []
+
+	for flow in raw:
+		if flow.designation == FlowDesignationEnum.ENROLLMENT:
+			enrollmentFlows.append(flow)
+
+	return enrollmentFlows
+
+
+
+def shiftDate(ref: datetime, days: int) -> datetime:	
+	return ref + datetime.timedelta(days=days)
+
+
+
+
+def createInvite(user: User) -> dict:
+	today = datetime.datetime.today()
+	expires = shiftDate(today, 14)
+
+	invite = InvitationRequest(
+		name=f'{user.username}-invite',
+		expires=expires,
+		fixed_data=user.createAuthInviteData(),
+		single_use=True,
+		flow='enrollment-predefined-username-email-name'
+	)
+
+	received = stages.stages_invitation_invitations_create(invite)
+	
+	with open('debug.dat', 'w+') as f:
+		pickle.dump(received, f)
