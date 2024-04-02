@@ -1,12 +1,12 @@
-import authentik_client as ac
-from authentik_client.models.invitation_request import InvitationRequest
-from authentik_client.models.flow import Flow
-from authentik_client.models.flow_designation_enum import FlowDesignationEnum
-import yaml
 import datetime
 
-from main import User
-import pickle
+import authentik_client as ac
+import yaml
+from authentik_client.models.flow import Flow
+from authentik_client.models.flow_designation_enum import FlowDesignationEnum
+from authentik_client.models.invitation_request import InvitationRequest
+
+from objects import User
 
 
 # get configuration for authentik instance from conf.yml
@@ -111,7 +111,5 @@ def createInvite(user: User) -> dict:
 		flow='enrollment-predefined-username-email-name'
 	)
 
-	received = stages.stages_invitation_invitations_create(invite)
+	return stages.stages_invitation_invitations_create(invite)
 	
-	with open('debug.dat', 'w+') as f:
-		pickle.dump(received, f)

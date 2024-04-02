@@ -1,7 +1,7 @@
-from verify import email as e, phone as p
 import authentik
 import twingate
-
+from verify import email as e
+from verify import phone as p
 
 
 
@@ -72,7 +72,7 @@ def _test():
 	# print(testuser.createAuthInviteData())
 	# authentik.createInvite(testuser)
 
-	authentik.fetchInviteFlows()[0].pk
+	flows = authentik.fetchInviteFlows()
 
 
 
