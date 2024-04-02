@@ -6,7 +6,7 @@ Verifies:
 * emails
 """
 
-import email, phone
+# import email, phone
 
 class MalformedError(ValueError):
 	pass

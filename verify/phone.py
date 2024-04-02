@@ -1,7 +1,7 @@
 import yaml
 
 
-with open('phone.yml', 'r') as f1:
+with open('verify/phone.yml', 'r') as f1:
 	# explicit typing for type hints, because pyyaml can't do that automatically
 	formats: list[dict[str, str|list[int | str]]] = yaml.safe_load(f1)
 

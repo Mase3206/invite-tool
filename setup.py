@@ -141,6 +141,7 @@ def interactive(ignore=False):
 	time.sleep(1)
 	save = input('\nSave new config? [Y/n] ')
 	if save.lower() == 'y' or save == '':
+		conf['authentik']['key'] = 'Bearer ' + conf['authentik']['key']
 		writeConfFile(conf)
 	else:
 		print('Canceling.')
