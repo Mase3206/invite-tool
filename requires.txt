@@ -1,3 +1,2 @@
 pyyaml
-fastapi
-"uvicorn[standard]"
+authentik_client
