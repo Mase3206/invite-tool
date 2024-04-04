@@ -8,3 +8,21 @@ twingate:
   # just the subdomain, as in "example" from "example.twingate.com"
   network: 
   key: 
+
+
+formats:
+  # valid part forms: full, initial, or [nothing]
+  username:
+    separator: ''
+
+    first: 
+      form: initial
+      order: 0
+
+    middle: 
+      form: 
+      order: 
+
+    last: 
+      form: full
+      order: 1

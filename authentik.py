@@ -1,10 +1,12 @@
 import datetime
+from datetime import datetime as dt
 
 import authentik_client as ac
 import yaml
 from authentik_client.models.flow import Flow
 from authentik_client.models.flow_designation_enum import FlowDesignationEnum
 from authentik_client.models.invitation_request import InvitationRequest
+# from authentik_client.models.invitation import Invitation
 
 from objects import User
 
@@ -90,17 +92,21 @@ def shiftDate(ref: datetime, days: int) -> datetime:
 
 
 
-def createInvite(user: User) -> dict:
+def createInvite(user: User, flowPk: str) -> dict:
 	today = datetime.datetime.today()
 	expires = shiftDate(today, 14)
+
+	data = user.createAuthInviteData()
+	data['invite_expires'] = str(expires)
 
 	invite = InvitationRequest(
 		name=f'{user.username}-invite',
 		expires=expires,
-		fixed_data=user.createAuthInviteData(),
+		fixed_data=data,
 		single_use=True,
-		flow='enrollment-predefined-username-email-name'
+		flow=flowPk,
 	)
 
-	return stages.stages_invitation_invitations_create(invite)
+	# return stages.stages_invitation_invitations_create(invite)
 	
+

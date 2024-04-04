@@ -1,7 +1,8 @@
 import authentik
 import twingate
-from verify import email as e
-from verify import phone as p
+import verify
+import yaml
+from collections import OrderedDict
 
 
 
@@ -27,18 +28,28 @@ class User:
 	----------------------------
 		phone (str): user's phone number. Must include "+" country code and area code. Do not use dashes.
 		username (str): force username
+		middleName (str): user's middle name
+		middleInitial (str): user's middle inital; not used if middleName is set
 	"""
 
-	def __init__(self, firstName: str, lastName: str, email: str, groups: list, phone='', username=''):
+	def __init__(self, firstName: str, lastName: str, email: str, groups: list[str], middleName='', middleInitial='', phone='', username=''):
+		self.first = firstName
+		self.last = lastName
+
+		self.middleName = middleName
+		self.middleInitial = middleInitial
+
+
 		knownUsers = authentik.fetchUserList()
-		self.username = firstName.lower()[0] + lastName.lower() if username == '' else username.lower()
-		# print(f'this {self.username}')
+
+		if username == '':
+			self.username = self.makeUsername()
+		else:
+			self.username = username
+
 		if self.username in knownUsers:
 			raise ExistsError(f'User {self.username} already exists.')
 
-
-		self.first = firstName
-		self.last = lastName
 
 		knownGroups = authentik.fetchGroupList()
 		for group in groups:
@@ -47,23 +58,92 @@ class User:
 				groups.remove(group)
 		self.groups = groups
 
-		if e.check(email):
+
+
+		if verify.email_check(email):
 			self.email = email
-		
+		else:
+			raise ValueError(f'{email} is not a valid email.')
+
+
 		if phone != '':
-			phoneRegion = p.findMatch(phone)
-			self.phone = p.formatPretty(phone, phoneRegion)
-		
+			phoneRegion = verify.phone_findMatch(phone)
+			self.phone = verify.phone_formatPretty(phone, phoneRegion)
+		else:
+			self.phone = ''
+
+
 	
+	def makeUsername(self) -> str:
+		with open('conf.yml', 'r') as f:
+			usernameFormat: list[dict[str, str | None]] = yaml.safe_load(f)['formats']['username']
+
+		# separator
+		if usernameFormat['separator'] != None:
+			sep1 = usernameFormat['separator']
+			sep2 = usernameFormat['separator']
+		else:
+			sep1 = ''
+			sep2 = ''
+		
+		# first name
+		if usernameFormat['first'] == 'full':
+			first = self.first.lower()
+		elif usernameFormat['first'] == 'initial':
+			first = self.first.lower()[0]
+		else:
+			first = ''
+			sep1 = ''
+
+		# middle name
+		if usernameFormat['middle'] == 'full':
+			middle = self.middleName.lower()
+		elif usernameFormat['middle'] == 'initial':
+			middle = self.middleInitial.lower()
+		else:
+			middle = ''
+			sep2 = ''
+
+		# first name
+		if usernameFormat['last'] == 'full':
+			last = self.last.lower()
+		elif usernameFormat['last'] == 'initial':
+			last = self.last.lower()[0]
+		else:
+			last = ''
+
+		return f'{first}{sep1}{middle}{sep2}{last}'
+
+
+
+
+	def fullName(self) -> str:
+		if self.middleInitial != '':
+			if self.middleName != '':
+				return f'{self.first} {self.middleName} {self.last}'
+			else:
+				return f'{self.first} {self.middleInitial}. {self.last}'
+		else:
+			return f'{self.first} {self.last}'
+
+
 
 	def createAuthInviteData(self) -> dict:
 		return {
-			'name': f'{self.first} {self.last}',
+			'name': self.fullName(),
 			'username': self.username,
 			'email': self.email,
 			'phone': self.phone,
-			'groups_to_add': self.groups
+			'groups_to_add': self.groups,
+			'invite_expires': ''
 		}
+
+
+
+
+
+
+
 
 
 
@@ -73,6 +153,7 @@ def _test():
 	# authentik.createInvite(testuser)
 
 	flows = authentik.fetchInviteFlows()
+	print(flows)
 
 
 

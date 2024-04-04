@@ -6,7 +6,8 @@ Verifies:
 * emails
 """
 
-# import email, phone
+from verify import *
+from verify import __doc__
 
 class MalformedError(ValueError):
 	pass
@@ -14,3 +15,6 @@ class MalformedError(ValueError):
 
 class TheFuck(Exception):
 	pass
+
+
+__all__ = ('email', 'phone')
