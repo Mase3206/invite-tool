@@ -1,5 +1,4 @@
 import datetime
-from datetime import datetime as dt
 
 import authentik_client as ac
 import yaml

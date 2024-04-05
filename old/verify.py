@@ -50,7 +50,7 @@ def phone_formatPretty(phoneNumber: str, foundFormat: dict):
 		formatted.append(noDashes[i])
 	
 	return foundFormat['code'] + ' ' + ''.join(formatted)
-	
+
 
 
 def email_check(email: str) -> bool:
