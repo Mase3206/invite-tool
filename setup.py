@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import yaml, json, time
+import yaml, json, time, subprocess
 
 
 __author__ = 'Noah S. Roberts'
@@ -173,4 +173,6 @@ def cli():
 
 
 if __name__ == '__main__':
+	print('Ensuring dependencies are installed...')
+	subprocess.Popen('pip install -r requires.txt'.split(' '), stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
 	cli()

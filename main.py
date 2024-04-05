@@ -22,8 +22,8 @@ import twingate
 global nt, headerText
 
 
-with open('conf.yml', 'r') as f1:
-	conf: dict[dict[str, str] | str, str] = yaml.safe_load(f1)
+with open('conf.yml', 'r') as confFile:
+	conf: dict[dict[str, str] | str, str] = yaml.safe_load(confFile)
 
 
 
@@ -112,9 +112,11 @@ class Email:
 	Email object that checks for validity of given email when initalized.
 	"""
 	def __init__(self, email: str):
-		self.prefix = email.split('@')[0]
-		self.domain = email.split('@')[1].split('.')[0]
-		self.tld = email.split('.')[1]
+		a = email.split('@')[0]
+		b = email.split('@')[1]
+		self.prefix = a
+		self.domain = b.split('.')[0]
+		self.tld = b.split('.')[1]
 
 		if self.domain == 'localhost':
 			self.addr = f'{self.prefix}@localhost'
@@ -129,7 +131,6 @@ class Email:
 	
 	def __repr__(self) -> str:
 		return f'pre={self.prefix}, domain={self.domain}, tld={self.tld}'
-
 
 
 
@@ -191,6 +192,10 @@ class HomelabUser:
 			self.phone = ''
 
 	
+	def __str__(self) -> str:
+		return self.username
+
+
 	def _makeUsername(self) -> str:
 		with open('conf.yml', 'r') as f:
 			usernameFormat: list[dict[str, str | None]] = yaml.safe_load(f)['formats']['username']
@@ -302,11 +307,29 @@ When you click the link below, it will automatically create a new user with the 
 - Email: {self.toAddr}
 
 
-Clicking the invite link will walk you through a brief enrollment process before presenting you with your Authentik dashboard.
+Twingate setup instructions:
+1. If on a desktop or laptop, go to https://twingate.com/download/ and download the Twingate client for your OS. If on an iPhone, iPad, or Android device, download the Twingate client from the Apple App Store or Google Play Store.
+2. Open the Twingate client. If/when it prompts to allow a VPN profile, click allow. When it asks for the network name, enter "noahsroberts" only.
+3. When presented with the log-in page, choose one of the "Log in with..." services that uses the same email as the one above. If there is an email mismatch, signing in will fail. 
+4. Profit. 
 
+Notes:
+- Later conections to Twingate will not require you to enter the network name, but you will need to sign in every week or so. It's annoying, but it can't really be changed. 
+- When connected, your device might say that you are connected to a VPN. Twingate isn't a VPN though, but requires the installation of a VPN profile to work. Ask Noah if you would like to know the details of why this is.
+
+If you have any questions or issues, don't hesitate to message Noah.
+
+
+===
+Clicking the invite link below will walk you through a brief enrollment process before presenting you with your Authentik dashboard. Twingate must be installed and connected for this link to work. 
 
 Invite link: {self.inviteLink}
-		"""
+Expires: {str(self.expires)}
+===
+
+
+Happy Homelabbing!
+"""
 
 	
 	def mailtrapSend(self, apiKey):
@@ -396,6 +419,25 @@ class Authentik:
 		return ref + datetime.timedelta(days=days)
 
 
+	def fetchExistingInvites(self) -> list[Invitation]:
+		"""
+		Fetches existing, unused invites.
+		"""
+
+		raw: list[Invitation] = self.stages.stages_invitation_stages_list().results
+		
+
+	def inviteExists(self, user: HomelabUser):
+		existing = self.fetchExistingInvites()
+		for a in existing:
+			if a.fixed_data['username'] == user.username:
+				return True
+			else:
+				return False
+		
+		if len(existing) == 0:
+			return False
+
 
 	def createInvite(self, user: HomelabUser, flow: Flow):
 		today = datetime.datetime.today()
@@ -415,11 +457,14 @@ class Authentik:
 		return self.stages.stages_invitation_invitations_create(invite)
 
 
+
 authObj = Authentik(conf['authentik'])
 
 
-
 def header():
+	"""
+	Prints header text, sets `nt` variable. Only used by CLI.
+	"""
 	global nt, headerText
 	headerText = """
 
@@ -440,7 +485,11 @@ def header():
 
 
 
-def createInvite():
+# CLI interactive invitation 
+def createInvite() -> None:
+	"""
+	Interactive invitation helper tool. Used by CLI.
+	"""
 	knownGroups = authObj.fetchGroupList()
 	knownInviteFlows: list[Flow] = authObj.fetchInviteFlows()
 
@@ -472,8 +521,16 @@ def createInvite():
 	else:
 		groupsToAdd = groupsToAdd.split(' ')
 
+	print()
 	newUser = HomelabUser(first, last, email, groupsToAdd, middleName=middleName, middleInitial=middleInitial, phone=phone, username=username)
-	inviteObj = authObj.createInvite(newUser, knownInviteFlows[flowChoice])
+	print(f'Created HomelabUser object for {newUser.username}.')
+
+	if authObj.inviteExists(newUser):
+		inviteObj = authObj.createInvite(newUser, knownInviteFlows[flowChoice])
+		print(f'Created invitation in Authentik for {newUser.username}.')
+	else:
+		print(f'Invite')
+
 	inviteEmail = InviteEmail(
 		user=newUser,
 		fromAddress=conf['fromAddr'],
@@ -481,16 +538,25 @@ def createInvite():
 		flow=knownInviteFlows[flowChoice],
 		authURL=conf['authentik']['url']
 	)
+	print(f'Created invite email for {newUser.username}. Will be sent from {conf['fromAddr']} to {newUser.email}.')
+
 	inviteEmail.mailtrapSend(conf['mailtrap']['key'])
+	print(f'Sent invite email to {newUser.email}.')
+	print(f'Invitation success! Invite expires on {str(inviteObj.expires)}.')
+	print(f'Invite token: {inviteObj.pk}')
+	print()
 
 
 
 # CLI stuff
 firstMenu = True
-def menu():
+def menu() -> None:
+	"""
+	Interactive CLI menu.
+	"""
 	global firstMenu
 
-	# print(firstMenu)
+	print(firstMenu)
 	if firstMenu:
 		print()
 		firstMenu = False
@@ -553,8 +619,13 @@ def menu():
 		return
 	
 
+def _test():
+	m = Email('mr.skelly1285@gmail.com')
+	print(m.addr)
+
 
 if __name__ == '__main__':
+	# _test()
 	header()
 	while True:
 		menu()
