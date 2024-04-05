@@ -30,11 +30,13 @@
 					</ul>
 					
 					<p>In case you were curious, here's the info that your invite contains:</p>
+					{% blocktrans with name=user.name, username=user.username, email=user.email %}
 					<ul>
-						<li>Name: {% trans user.name %}</li>
-						<li>Username: {% trans user.username %}</li>
-						<li>Email: {% trans user.email %}</li>
+						<li>Name: {{ name }}</li>
+						<li>Username: {{ username }}</li>
+						<li>Email: {{ email }}</li>
 					</ul>
+					{% endblocktrans %}
 				</td>
 			</tr>
 			<tr>

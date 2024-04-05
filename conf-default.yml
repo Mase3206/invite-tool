@@ -1,3 +1,5 @@
+fromAddr: 
+
 authentik:
   # do not include "https".
   url: 
@@ -9,6 +11,9 @@ twingate:
   network: 
   key: 
 
+mailtrap:
+  # only SMTP with API key-based authentication is supported
+  key: 
 
 formats:
   # valid part forms: full, initial, or [nothing]

@@ -2,7 +2,8 @@ import authentik
 import twingate
 import verify
 import yaml
-from collections import OrderedDict
+import smtplib
+
 
 
 
@@ -72,7 +73,6 @@ class User:
 		else:
 			self.phone = ''
 
-
 	
 	def makeUsername(self) -> str:
 		with open('conf.yml', 'r') as f:
@@ -115,8 +115,6 @@ class User:
 		return f'{first}{sep1}{middle}{sep2}{last}'
 
 
-
-
 	def fullName(self) -> str:
 		if self.middleInitial != '':
 			if self.middleName != '':
@@ -125,7 +123,6 @@ class User:
 				return f'{self.first} {self.middleInitial}. {self.last}'
 		else:
 			return f'{self.first} {self.last}'
-
 
 
 	def createAuthInviteData(self) -> dict:
@@ -140,8 +137,66 @@ class User:
 
 
 
+class InviteEmail:
+	def __init__(
+			self, 
+			user: authentik.User, 
+			fromAddress: str, 
+			invite: authentik.Invitation, 
+			flow: authentik.Flow,
+			authURL: str
+		):
+
+		self.username = user.username
+		self.name = user.fullName()
+		self.toAddr = user.email
+		self.fromAddr = fromAddress
+		self.expires = invite.expires
+		self.pk = invite.pk
+		self.slug = flow.name
+		self.inviteLink = f'https://{authURL}/if/flow/{self.slug}/?itoken={self.pk}'
+
+		self.message = f"""\
+		Subject: Welcome to das homelab!
+		From: Authentik <{self.fromAddr}>
+		To: {self.user.fullName()} <{self.toAddr}>
+		
+		Welcome to "das homelab", Noah's homelab running out of his dorm room! Below is the link to activate your new account... BUT, before you click it, please read the information below:
+
+		- The username you are given cannot be easily changed.
+		- The email this was sent to will be set as the primary email on your account. All homelab-related notifications, such as shared file alerts or password reset emails, will be sent here. This can be changed in the user settings inside Authentik.
+		- At this point in time, you must be connected to Twingate to connect to das homelab.
+
+		
+		Also, take note of these important URLs:
+
+		- Homepage (home.noahsroberts.com) - where links to all the things in the homelab live
+		- Authentik (auth.noahsroberts.com) - the single sign-on system, prominently displaying the "das homelab" logo
+		- Nextcloud (files.noahsroberts.com) - like Google Drive, but self-hosted and on steroids
+		- BookStack (wiki.noahsroberts.com) - internal, user-facing wiki
 
 
+		So, what is this email? Well, it's an invite. You are by no means obligated to accept it, but it would make your friend pretty dang happy. You might find some cool stuff in there, too. And, if you decide to pass for now but change your mind later, just let Noah know and he'll send you another invite.
+
+		
+		When you click the link below, it will automatically create a new user with the following information:
+		- Name: {self.name}
+		- Username: {self.username}
+		- Email: {self.toAddr}
+		
+
+		Clicking the invite link will walk you through a brief enrollment process before presenting you with your Authentik dashboard.
+
+
+		Invite link: {self.inviteLink}
+		"""
+
+	
+	def mailtrapSend(self, apiKey):
+		with smtplib.SMTP("live.smtp.mailtrap.io", 587) as server:
+			server.starttls()
+			server.login("api", apiKey)
+			server.sendmail(self.fromAddr, self.toAddr, self.message)
 
 
 

@@ -65,7 +65,7 @@ def createInvite():
 		groupsToAdd = groupsToAdd.split(' ')
 
 	newUser = objects.User(first, last, email, groupsToAdd, middleName=middleName, middleInitial=middleInitial, phone=phone, username=username)
-	authentik.createInvite(newUser, knownInviteFlows[flowChoice].pk)
+	inviteObj = authentik.createInvite(newUser, knownInviteFlows[flowChoice].pk)
 
 
 
