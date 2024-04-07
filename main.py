@@ -245,6 +245,17 @@ class HomelabUser:
 				return f'{self.first} {self.middleInitial}. {self.last}'
 		else:
 			return f'{self.first} {self.last}'
+		
+	
+	def preview(self) -> str:
+		prettyGroups = ', '.join(self.groups)
+		return f"""\
+Full name: {self.fullName()}
+Username: {self.username}
+Groups: {prettyGroups}
+Email: {self.email}
+Phone: {self.phone}
+"""
 	
 
 	def createAuthInviteData(self) -> dict:
@@ -269,70 +280,50 @@ class InviteEmail:
 			authURL: str
 		):
 
-		self.username = user.username
-		self.name = user.fullName()
-		self.toAddr = user.email
+		self.user = user
+		# self.username = user.username
+		# self.name = user.fullName()
+		# self.toAddr = user.email
 		self.fromAddr = fromAddress
 		self.expires = invite.expires
-		self.pk = invite.pk
-		self.slug = flow.slug
-		self.inviteLink = f'https://{authURL}/if/flow/{self.slug}/?itoken={self.pk}'
+		# self.pk = invite.pk
+		# self.slug = flow.slug
+		self.inviteLink = f'https://{authURL}/if/flow/{flow.slug}/?itoken={invite.pk}'
 
 		self.message = f"""\
 Subject: Welcome to das homelab!
-To: {self.name} <{self.toAddr}>
-From: Authentik <{self.fromAddr}>
+To: {self.user.fullName()} <{self.user.email}>
+From: Authentik on das homelab <{self.fromAddr}>
 
-Welcome to "das homelab", Noah's server — a.k.a. homelab — running out of his dorm room! Below is the link to activate your new account... BUT, before you click it, please read the information below:
+Welcome to "das homelab", Noah's server -- a.k.a. homelab -- running out of his dorm room! Below is the link to activate your new account... BUT, before you click it, please read the information below:
 
-* The username you are given cannot be easily changed.
-* The email this was sent to will be set as the primary email on your account. All homelab-related notifications, such as shared file alerts or password reset emails, will be sent here. This can be changed in the user settings inside Authentik.
-* At this point in time, you must be connected to Twingate to connect to das homelab.
+- The username you are given cannot be easily changed. 
+- The email this was sent to will be set as the primary email on your account. All homelab-related notifications, such as shared file alerts or password reset emails, will be sent here. This can be changed in the user settings inside Authentik.
+- You no longer need to connect via Twingate! If you have Twingate installed, you can safely remove it. 
 
 
 Also, take note of these important URLs:
 
-- Homepage (home.noahsroberts.com) - where links to all the things in the homelab live, including some extras beyond those listed below.
-- Authentik (auth.noahsroberts.com) - the single sign-on system, prominently displaying the "das homelab" logo
-- Nextcloud (files.noahsroberts.com) - like Google Drive, but self-hosted and on steroids
-- BookStack (wiki.noahsroberts.com) - internal, user-facing wiki
-{"- Plex (plex.noahsroberts.com or plex.tv) - self-hosted media server, supporting movies, TV, and music" if "plexuser" in user.groups else ""}
-
+- Homepage (home.noahsroberts.com) - where links to all the things in the homelab live, including some extras beyond those listed below. 
+- Authentik (auth.noahsroberts.com) - the single sign-on system, prominently displaying the "das homelab" logo 
+- Nextcloud (files.noahsroberts.com) - like Google Drive, but self-hosted and on steroids 
+- BookStack (wiki.noahsroberts.com) - internal, user-facing wiki {"\n- Plex (plex.noahsroberts.com or plex.tv) - self-hosted media server, supporting movies, TV, and music" if "plexuser" in self.user.groups else ""}
+{self.plexInfo()}
 
 So, what is this email? Well, it's an invite. You are by no means obligated to accept it, but it would make your friend pretty dang happy. You might find some cool stuff in there, too. And, if you decide to pass for now but change your mind later, just let Noah know and he'll send you another invite.
 
 
 When you click the link below, it will automatically create a new user with the following information:
-- Name: {self.name}
-- Username: {self.username}
-- Email: {self.toAddr}
-
-
-To access das homelab, you have a couple options. When on eduroam or grizzlyguest, you *must* either:
-- be connected to Twingate (instructions below),
-- be connected to a 3rd-party VPN, like NordVPN or Private Internet Access, or
-- be connected to the Brandenburg WiFi network that das homelab itself is connected to.
-No specific things are required to access the homelab when not on eduroam or grizzlyguest.
-
-
-Twingate setup instructions:
-1. If on a desktop or laptop, go to https://twingate.com/download/ and download the Twingate client for your OS. If on an iPhone, iPad, or Android device, download the Twingate client from the Apple App Store or Google Play Store.
-2. Open the Twingate client. If/when it prompts to allow a VPN profile, click allow. When it asks for the network name, enter "noahsroberts" only.
-3. When presented with the log-in page, choose one of the "Log in with..." services that uses the same email as the one above. If there is an email mismatch, signing in will fail. 
-4. Profit. 
-
-Notes:
-- Later conections to Twingate will not require you to enter the network name, but you will need to sign in every week or so. It's annoying, but it can't really be changed. 
-- When connected, your device might say that you are connected to a VPN. Twingate isn't a VPN though, but requires the installation of a VPN profile to work. Ask Noah if you would like to know the details of why this is.
-
-If you have any questions or issues, don't hesitate to message Noah.
+- Name: {self.user.fullName()} 
+- Username: {self.user.username} 
+- Email: {self.user.email} 
 
 
 ===
-Clicking the invite link below will walk you through a brief enrollment process before presenting you with your Authentik dashboard. If you're having issues with the link, refer to the "To access the homelab" section above.
+Clicking the invite link below will walk you through a brief enrollment process before presenting you with your Authentik dashboard. 
 
-Invite link: {self.inviteLink}
-Expires: {str(self.expires)}
+Invite link: {self.inviteLink} 
+Expires: {str(self.expires)} 
 ===
 
 
@@ -340,11 +331,25 @@ Happy Homelabbing!
 """
 
 	
-	def mailtrapSend(self, apiKey):
+	def plexInfo(self):
+		if "plexuser" in self.user.groups:
+			return "\n\nYou were added as a Plex user, but giving you access to the Plex server is not automatic. You will need to create a Plex account and let Noah know what what email you used to make it. Then he can send you an invite which will go to your email inbox. Once you accept it, you *should* have access to the Plex server. It may be worth doing this with Noah, just to make sure it actually works -- because sometimes it doesn't.\n"
+		else:
+			return ""
+
+	
+	def mailtrapSend(self, apiKey: str):
 		with smtplib.SMTP("live.smtp.mailtrap.io", 587) as server:
 			server.starttls()
 			server.login("api", apiKey)
-			server.sendmail(self.fromAddr, self.toAddr, self.message)
+			server.sendmail(self.fromAddr, self.user.email, self.message)
+
+
+	
+	def send(self, mailtrapApiKey: str):
+		self.mailtrapSend(mailtrapApiKey)
+		if "plexuser" in self.user.groups:
+			print(f"You'll need to manually invite {self.user.first} to Plex once they create a Plex account.")
 
 
 
@@ -427,18 +432,22 @@ class Authentik:
 		return ref + datetime.timedelta(days=days)
 
 
-	def fetchExistingInvites(self) -> list[Invitation]:
+	def fetchExistingInvites(self) -> list[str]:
 		"""
 		Fetches existing, unused invites.
 		"""
 
-		raw: list[Invitation] = self.stages.stages_invitation_stages_list().results
+		raw: list[Invitation] = self.stages.stages_invitation_invitations_list().results
+
+		names = [a.name for a in raw]
+		return names
 		
 
 	def inviteExists(self, user: HomelabUser):
 		existing = self.fetchExistingInvites()
 		for a in existing:
-			if a.fixed_data['username'] == user.username:
+			print(a[:-7])
+			if a[:-7] == user.username:
 				return True
 			else:
 				return False
@@ -529,30 +538,54 @@ def createInvite() -> None:
 	else:
 		groupsToAdd = groupsToAdd.split(' ')
 
-	print()
-	newUser = HomelabUser(first, last, email, groupsToAdd, middleName=middleName, middleInitial=middleInitial, phone=phone, username=username)
+
+	newUser = HomelabUser(
+		first, 
+		last, 
+		email, 
+		groupsToAdd, 
+		middleName=middleName, 
+		middleInitial=middleInitial, 
+		phone=phone, 
+		username=username
+	)
+
+	print('\nConfirm the following information:')
+	print(newUser.preview())
+	proceed = input('Continue with user creation and invitation? [Y/n] ')
+	if proceed.lower() == 'y' or proceed == '':
+		pass
+	else:
+		print('Cancelling.')
+		return
+
 	print(f'Created HomelabUser object for {newUser.username}.')
 
-	if authObj.inviteExists(newUser):
+
+	if not authObj.inviteExists(newUser):
 		inviteObj = authObj.createInvite(newUser, knownInviteFlows[flowChoice])
 		print(f'Created invitation in Authentik for {newUser.username}.')
+
+		inviteEmail = InviteEmail(
+			user=newUser,
+			fromAddress=conf['fromAddr'],
+			invite=inviteObj,
+			flow=knownInviteFlows[flowChoice],
+			authURL=conf['authentik']['url']
+		)
+		print(f'Created invite email for {newUser.username}. Will be sent from {conf['fromAddr']} to {newUser.email}.')
+
+		inviteEmail.send(mailtrapApiKey=conf['mailtrap']['key'])
+		print(f'Sent invite email to {newUser.email}.')
+
+		print(f'Invitation success! Invite expires on {str(inviteObj.expires)}.')
+		print(f'Invite token: {inviteObj.pk}')
+		time.sleep(5)
+		return
+
 	else:
-		print(f'Invite')
-
-	inviteEmail = InviteEmail(
-		user=newUser,
-		fromAddress=conf['fromAddr'],
-		invite=inviteObj,
-		flow=knownInviteFlows[flowChoice],
-		authURL=conf['authentik']['url']
-	)
-	print(f'Created invite email for {newUser.username}. Will be sent from {conf['fromAddr']} to {newUser.email}.')
-
-	inviteEmail.mailtrapSend(conf['mailtrap']['key'])
-	print(f'Sent invite email to {newUser.email}.')
-	print(f'Invitation success! Invite expires on {str(inviteObj.expires)}.')
-	print(f'Invite token: {inviteObj.pk}')
-	print()
+		print(f'ERROR: Invite for {newUser.username} already exists.')
+		return
 
 
 
@@ -564,7 +597,7 @@ def menu() -> None:
 	"""
 	global firstMenu
 
-	print(firstMenu)
+	# print(firstMenu)
 	if firstMenu:
 		print()
 		firstMenu = False
