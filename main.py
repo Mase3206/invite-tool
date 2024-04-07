@@ -283,7 +283,7 @@ Subject: Welcome to das homelab!
 To: {self.name} <{self.toAddr}>
 From: Authentik <{self.fromAddr}>
 
-Welcome to "das homelab", Noah's homelab running out of his dorm room! Below is the link to activate your new account... BUT, before you click it, please read the information below:
+Welcome to "das homelab", Noah's server — a.k.a. homelab — running out of his dorm room! Below is the link to activate your new account... BUT, before you click it, please read the information below:
 
 * The username you are given cannot be easily changed.
 * The email this was sent to will be set as the primary email on your account. All homelab-related notifications, such as shared file alerts or password reset emails, will be sent here. This can be changed in the user settings inside Authentik.
@@ -292,10 +292,11 @@ Welcome to "das homelab", Noah's homelab running out of his dorm room! Below is 
 
 Also, take note of these important URLs:
 
-- Homepage (home.noahsroberts.com) - where links to all the things in the homelab live
+- Homepage (home.noahsroberts.com) - where links to all the things in the homelab live, including some extras beyond those listed below.
 - Authentik (auth.noahsroberts.com) - the single sign-on system, prominently displaying the "das homelab" logo
 - Nextcloud (files.noahsroberts.com) - like Google Drive, but self-hosted and on steroids
 - BookStack (wiki.noahsroberts.com) - internal, user-facing wiki
+{"- Plex (plex.noahsroberts.com or plex.tv) - self-hosted media server, supporting movies, TV, and music" if "plexuser" in user.groups else ""}
 
 
 So, what is this email? Well, it's an invite. You are by no means obligated to accept it, but it would make your friend pretty dang happy. You might find some cool stuff in there, too. And, if you decide to pass for now but change your mind later, just let Noah know and he'll send you another invite.
@@ -305,6 +306,13 @@ When you click the link below, it will automatically create a new user with the 
 - Name: {self.name}
 - Username: {self.username}
 - Email: {self.toAddr}
+
+
+To access das homelab, you have a couple options. When on eduroam or grizzlyguest, you *must* either:
+- be connected to Twingate (instructions below),
+- be connected to a 3rd-party VPN, like NordVPN or Private Internet Access, or
+- be connected to the Brandenburg WiFi network that das homelab itself is connected to.
+No specific things are required to access the homelab when not on eduroam or grizzlyguest.
 
 
 Twingate setup instructions:
@@ -321,7 +329,7 @@ If you have any questions or issues, don't hesitate to message Noah.
 
 
 ===
-Clicking the invite link below will walk you through a brief enrollment process before presenting you with your Authentik dashboard. Twingate must be installed and connected for this link to work. 
+Clicking the invite link below will walk you through a brief enrollment process before presenting you with your Authentik dashboard. If you're having issues with the link, refer to the "To access the homelab" section above.
 
 Invite link: {self.inviteLink}
 Expires: {str(self.expires)}
