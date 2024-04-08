@@ -294,6 +294,8 @@ class InviteEmail:
 Subject: Welcome to das homelab!
 To: {self.user.fullName()} <{self.user.email}>
 From: Authentik on das homelab <{self.fromAddr}>
+Date: {str(datetime.datetime.today())}
+Category: Homelab invite
 
 Welcome to "das homelab", Noah's server -- a.k.a. homelab -- running out of his dorm room! Below is the link to activate your new account... BUT, before you click it, please read the information below:
 
@@ -446,7 +448,6 @@ class Authentik:
 	def inviteExists(self, user: HomelabUser):
 		existing = self.fetchExistingInvites()
 		for a in existing:
-			print(a[:-7])
 			if a[:-7] == user.username:
 				return True
 			else:
