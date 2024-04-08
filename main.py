@@ -662,7 +662,7 @@ def menu() -> None:
 
 def _test():
 	m = Email('mr.skelly1285@gmail.com')
-	print(m.addr)
+	print(m.addr)  # merp
 
 
 if __name__ == '__main__':
