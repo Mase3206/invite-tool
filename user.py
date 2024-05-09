@@ -1,13 +1,15 @@
 import yaml
 
-from authentik import Authentik
-from email import Email
+from mail import Email
 from phone import Phone
 
 
 class ExistsError(Exception):
 	pass
 
+
+with open('conf.yml', 'r') as f:
+	usernameFormat: dict[str, str | None] = yaml.safe_load(f)['formats']['username']
 
 
 class HomelabUser:
@@ -29,9 +31,10 @@ class HomelabUser:
 		username (str): force username
 		middleName (str): user's middle name
 		middleInitial (str): user's middle inital; not used if middleName is set
-	"""
+	"""		
+	
 
-	def __init__(self, authObj: Authentik, firstName: str, lastName: str, email: str, groups: list[str], middleName='', middleInitial='', phone='', username=''):
+	def __init__(self, authObj, firstName: str, lastName: str, email: str, groups: list[str], middleName='', middleInitial='', phone='', username=''):
 		self.first = firstName
 		self.last = lastName
 
@@ -73,9 +76,6 @@ class HomelabUser:
 
 
 	def _makeUsername(self) -> str:
-		with open('conf.yml', 'r') as f:
-			usernameFormat: list[dict[str, str | None]] = yaml.safe_load(f)['formats']['username']
-
 		# separator
 		if usernameFormat['separator'] != '':
 			sep1 = usernameFormat['separator']
