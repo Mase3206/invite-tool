@@ -6,7 +6,7 @@ from authentik_client.models.flow_designation_enum import FlowDesignationEnum
 from authentik_client.models.invitation import Invitation
 from authentik_client.models.invitation_request import InvitationRequest
 
-from user import HomelabUser
+# from user import HomelabUser
 
 
 class Authentik:
@@ -15,9 +15,7 @@ class Authentik:
 		# configure API client
 		configuration = ac.Configuration(
 			host = f'https://{authConf['url']}/api/v3', 
-			api_key = {
-				'authentik': authConf['key']
-			}
+			access_token = authConf['key']
 		)
 
 		# set api key
@@ -84,7 +82,7 @@ class Authentik:
 
 
 
-	def shiftDate(self, ref: datetime, days: int) -> datetime:	
+	def shiftDate(self, ref: datetime.datetime, days: int) -> datetime.datetime:	
 		return ref + datetime.timedelta(days=days)
 
 
@@ -99,7 +97,7 @@ class Authentik:
 		return names
 		
 
-	def inviteExists(self, user: HomelabUser):
+	def inviteExists(self, user):
 		existing = self.fetchExistingInvites()
 		for a in existing:
 			if a[:-7] == user.username:
@@ -111,7 +109,7 @@ class Authentik:
 			return False
 
 
-	def createInvite(self, user: HomelabUser, flow: Flow):
+	def createInvite(self, user, flow: Flow):
 		today = datetime.datetime.today()
 		expires = self.shiftDate(today, +14)
 
