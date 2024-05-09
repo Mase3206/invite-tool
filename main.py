@@ -318,7 +318,7 @@ So, what is this email? Well, it's an invite. You are by no means obligated to a
 When you click the link below, it will automatically create a new user with the following information:
 - Name: {self.user.fullName()} 
 - Username: {self.user.username} 
-- Email: {self.user.email} 
+- Email: {self.user.email} {"\n\n\nAs you are also an admin, you should set up 2FA as soon as possible. Noah's working on a policy that will remind any admin to set up a second authentication factor if they haven't yet." if "admin" in self.user.groups else ""}
 
 
 ===
