@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 
-import yaml, json, time, subprocess
+import json
+import subprocess
+import time
+
+import yaml
 
 
 __author__ = 'Noah S. Roberts'
