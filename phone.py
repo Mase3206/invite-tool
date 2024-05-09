@@ -5,7 +5,7 @@ class PhoneFormat:
 	"""
 	Turns dict-type format spec into a Python class for easier type annotations
 	"""
-	def __init__(self, formatDict: dict[str, str|list[int | str]]):
+	def __init__(self, formatDict: dict):
 		self.countryCode: str = formatDict['code']
 		self.usedBy: list[str] = formatDict['countries']
 		self.length: int = formatDict['length']
@@ -58,7 +58,7 @@ class Phone:
 
 		if len(noDashes) != self.regionFormat.length:
 			print(f'Incorrect length for found country {self.regionFormat.countryCode}')
-			return False
+			return self.unformatted
 		
 
 		group = 0
