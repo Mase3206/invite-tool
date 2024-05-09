@@ -2,34 +2,20 @@
 
 import os
 import time
-import yaml
 
-from authentik_client.models.flow import Flow
+import yaml
+from authentik_client import Flow
 
 import setup
-
 from authentik import Authentik
-from email import Email
 from invite import InviteEmail
+from mail import Email
 from user import HomelabUser
 
 global nt, headerText
 
-
-with open('conf.yml', 'r') as confFile:
-	conf: dict[dict[str, str] | str, str] = yaml.safe_load(confFile)
-
-
-authObj = Authentik(conf['authentik'])
-
-
-
-def header():
-	"""
-	Prints header text, sets `nt` variable. Only used by CLI.
-	"""
-	global nt, headerText
-	headerText = """
+nt = (True if os.name == 'nt' else False)
+headerText = """
 
 	 _____            _ _         _______          _ 
 	|_   _|          (_) |       |__   __|        | |
@@ -39,12 +25,25 @@ def header():
 	|_____|_| |_|\\_/ |_|\\__\\___|    |_|\\___/ \\___/|_|
 
 
+"""
+
+
+with open('conf.yml', 'r') as confFile:
+	conf: dict = yaml.safe_load(confFile)
+
+
+authObj = Authentik(conf['authentik'])
+
+
+
+def header():
 	"""
+	Prints header text. Only used by CLI.
+	"""
+
 	print(headerText)
 	print('Quickly create invites for Authentik and (if configured) Twingate.')
 	print()
-
-	nt = (True if os.name == 'nt' else False)
 
 
 
@@ -78,11 +77,7 @@ def createInvite() -> None:
 		print(g, end=' ')
 	print()
 
-	groupsToAdd = input('Enter valid group name(s) separated by a space on the following line. Entering nothing will result in the user having broken permissions.\n : ')
-	if groupsToAdd == '':
-		groupsToAdd = []
-	else:
-		groupsToAdd = groupsToAdd.split(' ')
+	groupsToAdd = input('Enter valid group name(s) separated by a space on the following line. Entering nothing will result in the user having broken permissions.\n : ').split(' ')
 
 
 	newUser = HomelabUser(
