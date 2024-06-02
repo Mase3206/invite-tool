@@ -71,7 +71,7 @@ Happy Homelabbing!
 	
 	def plexInfo(self):
 		if "plexuser" in self.user.groups:
-			return "- Plex (plex.noahsroberts.com or plex.tv) - self-hosted media server, supporting movies, TV, and music\n\nYou were added as a Plex user, but giving you access to the Plex server is not automatic. You will need to create a Plex account and let Noah know what what email you used to make it. Then he can send you an invite which will go to your email inbox. Once you accept it, you *should* have access to the Plex server. It may be worth doing this with Noah, just to make sure it actually works -- because sometimes it doesn't.\n"
+			return "- Plex (plex.noahsroberts.com or plex.tv) - self-hosted media server, supporting movies, TV, and music\n\nNote: You were added as a Plex user, but giving you access to the Plex server is not automatic. You will need to create a Plex account and let Noah know what what email you used to make it. Then he can send you an invite which will go to your email inbox. Once you accept it, you *should* have access to the Plex server. It may be worth doing this with Noah, just to make sure it actually works -- because sometimes it doesn't.\n"
 		else:
 			return ""
 		
