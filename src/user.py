@@ -35,11 +35,11 @@ class HomelabUser:
 	
 
 	def __init__(self, authObj, firstName: str, lastName: str, email: str, groups: list[str], middleName='', middleInitial='', phone='', username=''):
-		self.first = firstName
-		self.last = lastName
+		self.first = firstName.title()
+		self.last = lastName.title()
 
-		self.middleName = middleName
-		self.middleInitial = middleInitial
+		self.middleName = middleName.title()
+		self.middleInitial = middleInitial.upper()
 
 
 		knownUsers = authObj.fetchUserList()
