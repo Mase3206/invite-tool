@@ -19,7 +19,7 @@ class Phone:
 	Phone object containing an unformatted phone number, the phone number region's format, and its "pretty" (formatted) representation
 	"""
 	def __init__(self, phoneNumber: str):
-		with open('phone.yml', 'r') as f1:
+		with open('./conf/phone.yml', 'r') as f1:
 			# explicit typing for type hints, because pyyaml can't do that automatically
 			self.phone_formats: list[dict[str, str|list[int | str]]] = yaml.safe_load(f1)
 		

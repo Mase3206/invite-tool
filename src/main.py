@@ -5,6 +5,7 @@ import time
 
 import yaml
 from authentik_client import Flow
+from authentik_client.exceptions import ServiceException
 
 import setup
 from authentik import Authentik
@@ -28,7 +29,7 @@ headerText = """
 """
 
 
-with open('conf.yml', 'r') as confFile:
+with open('./conf/conf.yml', 'r') as confFile:
 	conf: dict = yaml.safe_load(confFile)
 
 

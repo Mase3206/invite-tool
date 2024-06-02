@@ -8,7 +8,7 @@ class ExistsError(Exception):
 	pass
 
 
-with open('conf.yml', 'r') as f:
+with open('./conf/conf.yml', 'r') as f:
 	usernameFormat: dict[str, str | None] = yaml.safe_load(f)['formats']['username']
 
 

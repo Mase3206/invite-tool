@@ -29,7 +29,7 @@ confDefault = {
 
 
 def createConfFile():
-	with open('conf.yml', 'w+') as f:
+	with open('./conf/conf.yml', 'w+') as f:
 		yaml.safe_dump(
 			confDefault,
 			f
@@ -38,7 +38,7 @@ def createConfFile():
 
 
 def getExisting():
-	with open('conf.yml', 'r') as f:
+	with open('./conf/conf.yml', 'r') as f:
 		try:
 			existing = yaml.safe_load(f)
 		
@@ -61,7 +61,7 @@ def getExisting():
 
 
 def writeConfFile(data: dict):
-	with open('conf.yml', 'w') as f:
+	with open('./conf/conf.yml', 'w') as f:
 		yaml.safe_dump(data, f)
 
 
