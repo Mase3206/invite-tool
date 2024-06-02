@@ -168,3 +168,6 @@ cython_debug/
 # invite-tool specific user config files
 conf.yml
 !conf-default.yml
+
+# other invite-tool specific stuff
+twingate-info.txt
