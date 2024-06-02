@@ -211,5 +211,21 @@ def _test():
 if __name__ == '__main__':
 	# _test()
 	header()
+
+	badGatewayCount = 0
 	while True:
-		menu()
+		try:
+			menu()
+		except ServiceException as e:
+			if int(e.status) == 502:
+				if badGatewayCount <= 3:
+					badGatewayCount += 1
+					print(f'Got a bad gateway error when trying to connect to {authObj.conf.host}. Waiting 15 seconds before re-trying.')
+					time.sleep(15)
+					pass
+				else:
+					print(f'Got a bad gateway error when trying to connect to {authObj.conf.host}. Too many retries attempted. Exiting...')
+					exit(1)
+					
+			else:
+				raise e

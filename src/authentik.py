@@ -11,18 +11,18 @@ from authentik_client.models.invitation_request import InvitationRequest
 
 class Authentik:
 	def __init__(self, authConf: dict[str, str]):
-		self.authConf = authConf
+		authConf = authConf
 		# configure API client
-		configuration = ac.Configuration(
+		self.conf = ac.Configuration(
 			host = f'https://{authConf['url']}/api/v3', 
 			access_token = authConf['key']
 		)
 
 		# set api key
-		configuration.api_key['authentik'] = authConf['key']
+		self.conf.api_key['authentik'] = authConf['key']
 
 
-		APIClient = ac.ApiClient(configuration)
+		APIClient = ac.ApiClient(self.conf)
 
 		# create API objects for each API classification
 		# admin = ac.AdminApi(APIClient)
