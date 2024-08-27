@@ -15,14 +15,14 @@ Configure invite-tool with Authentik and Twingate URLs and API keys. Meant to be
 
 confDefault = {
 	'authentik': {
-		'url': None,
-		'key': None
+		'url': '',
+		'key': ''
 	},
 
 	'twingate': {
-		'use': None,
-		'network': None,
-		'key': None
+		'use': False,
+		'network': '',
+		'key': ''
 	}
 }
 
