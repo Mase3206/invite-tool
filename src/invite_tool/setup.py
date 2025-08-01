@@ -37,7 +37,8 @@ def createConfFile():
 
 
 
-def getExisting():
+def getExisting() -> dict:
+	existing = {}
 	with open('./conf/conf.yml', 'r') as f:
 		try:
 			existing = yaml.safe_load(f)

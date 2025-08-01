@@ -1,7 +1,7 @@
 import yaml
 
-from mail import Email
-from phone import Phone
+from invite_tool.mail import Email
+from invite_tool.phone import Phone
 
 
 class ExistsError(Exception):

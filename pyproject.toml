@@ -1,0 +1,28 @@
+[project]
+name = "invite-tool"
+version = "0.1.0"
+description = "A simple tool to invite new users to Authentik and (if desired) Twingate."
+authors = [
+    {name = "Mase3206",email = "35052448+Mase3206@users.noreply.github.com"}
+]
+license = {text = "GPL-3.0-or-later"}
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pyyaml (>=6.0.2,<7.0.0)",
+    "authentik-client (>=2025.6.4.post1753714896,<2026.0.0)",
+    "mailtrap (>=2.1.0,<3.0.0)"
+]
+
+[tool.poetry]
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.12.7"
+isort = "^6.0.1"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pyright]
+reportPrivateImportUsage = false # needed for the Authentik module to work and not throw tons of errors by Pylance

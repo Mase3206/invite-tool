@@ -1,3 +1,0 @@
-pyyaml
-authentik_client
-mailtrap

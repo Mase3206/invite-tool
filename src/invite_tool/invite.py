@@ -4,7 +4,7 @@ import smtplib
 from authentik_client.models.flow import Flow
 from authentik_client.models.invitation import Invitation
 
-from user import HomelabUser
+from invite_tool.user import HomelabUser
 
 
 class InviteEmail:

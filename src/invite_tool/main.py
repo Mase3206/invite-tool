@@ -7,11 +7,11 @@ import yaml
 from authentik_client import Flow
 from authentik_client.exceptions import ServiceException
 
-import setup
-from authentik import Authentik
-from invite import InviteEmail
-from mail import Email
-from user import HomelabUser
+from invite_tool import setup
+from invite_tool.authentik import Authentik
+from invite_tool.invite import InviteEmail
+from invite_tool.mail import Email
+from invite_tool.user import HomelabUser
 
 global nt, headerText
 
@@ -217,7 +217,7 @@ if __name__ == '__main__':
 		try:
 			menu()
 		except ServiceException as e:
-			if int(e.status) == 502:
+			if int(e.status) == 502: #type:ignore
 				if badGatewayCount <= 3:
 					badGatewayCount += 1
 					print(f'Got a bad gateway error when trying to connect to {authObj.conf.host}. Waiting 15 seconds before re-trying.')
