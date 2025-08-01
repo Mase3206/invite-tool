@@ -191,6 +191,22 @@ files = [
 requests = ">=2.26.0"
 
 [[package]]
+name = "pmenu"
+version = "0.1.0"
+description = "Menu maker library for Python. Part of the Pasilan project."
+optional = false
+python-versions = ">=3.13"
+groups = ["main"]
+files = []
+develop = false
+
+[package.source]
+type = "git"
+url = "https://git.dashomelab.org/pasilan/pmenu.git"
+reference = "HEAD"
+resolved_reference = "3ee6255a9ed01ddc77d31f06b5a0c11ea778051b"
+
+[[package]]
 name = "pydantic"
 version = "2.11.7"
 description = "Data validation using Python type hints"
@@ -511,5 +527,5 @@ zstd = ["zstandard (>=0.18.0)"]
 
 [metadata]
 lock-version = "2.1"
-python-versions = ">=3.12"
-content-hash = "a22f4d2d049a705442eeaa6dbdcce2e2acdc2c46d4203f213379987845a4d303"
+python-versions = ">=3.13"
+content-hash = "70648d47b7324a8304ddf85adb2fe8d593b585154c63a03c8819fa84e5da9ff7"

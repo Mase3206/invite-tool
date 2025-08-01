@@ -5,141 +5,141 @@ from invite_tool.phone import Phone
 
 
 class ExistsError(Exception):
-	pass
+    pass
 
 
-with open('./conf/conf.yml', 'r') as f:
-	usernameFormat: dict[str, str | None] = yaml.safe_load(f)['formats']['username']
+with open("./conf/conf.yml", "r") as f:
+    usernameFormat: dict[str, str | None] = yaml.safe_load(f)["formats"]["username"]
 
 
 class HomelabUser:
-	"""
-	User Object
-	=====================
+    """
+    User Object
+    =====================
 
-	Holds an Authentik user's first and last name, username, email, and optional attributes for use in a user invitation.
+    Holds an Authentik user's first and last name, username, email, and optional attributes for use in a user invitation.
 
-	Required attributes (args)
-	--------------------------
-		firstName (str): user's first name
-		lastName (str): user's last name
-		email (str): user's email
+    Required attributes (args)
+    --------------------------
+            firstName (str): user's first name
+            lastName (str): user's last name
+            email (str): user's email
 
-	Optional attributes (kwargs)
-	----------------------------
-		phone (str): user's phone number. Must include "+" country code and area code. Do not use dashes.
-		username (str): force username
-		middleName (str): user's middle name
-		middleInitial (str): user's middle inital; not used if middleName is set
-	"""		
-	
+    Optional attributes (kwargs)
+    ----------------------------
+            phone (str): user's phone number. Must include "+" country code and area code. Do not use dashes.
+            username (str): force username
+            middleName (str): user's middle name
+            middleInitial (str): user's middle inital; not used if middleName is set
+    """
 
-	def __init__(self, authObj, firstName: str, lastName: str, email: str, groups: list[str], middleName='', middleInitial='', phone='', username=''):
-		self.first = firstName.title()
-		self.last = lastName.title()
+    def __init__(
+        self,
+        authObj,
+        firstName: str,
+        lastName: str,
+        email: str,
+        groups: list[str],
+        middleName="",
+        middleInitial="",
+        phone="",
+        username="",
+    ):
+        self.first = firstName.title()
+        self.last = lastName.title()
 
-		self.middleName = middleName.title()
-		self.middleInitial = middleInitial.upper()
+        self.middleName = middleName.title()
+        self.middleInitial = middleInitial.upper()
 
+        knownUsers = authObj.fetchUserList()
 
-		knownUsers = authObj.fetchUserList()
+        if username == "":
+            self.username = self._makeUsername()
+        else:
+            self.username = username
 
-		if username == '':
-			self.username = self._makeUsername()
-		else:
-			self.username = username
+        if self.username in knownUsers:
+            raise ExistsError(f"User {self.username} already exists.")
 
-		if self.username in knownUsers:
-			raise ExistsError(f'User {self.username} already exists.')
+        knownGroups = authObj.fetchGroupList()
+        for group in groups:
+            if group not in knownGroups:
+                print(f"Unknown group {group}. Removing from list.")
+                groups.remove(group)
+        self.groups = groups
 
+        self.email = Email(email).addr
 
-		knownGroups = authObj.fetchGroupList()
-		for group in groups:
-			if group not in knownGroups:
-				print(f'Unknown group {group}. Removing from list.')
-				groups.remove(group)
-		self.groups = groups
+        if phone != "":
+            self.phone = Phone(phone).pretty
+        else:
+            self.phone = ""
 
+    def __str__(self) -> str:
+        return self.username
 
+    def _makeUsername(self) -> str:
+        # separator
+        if usernameFormat["separator"] != "":
+            sep1 = usernameFormat["separator"]
+            sep2 = usernameFormat["separator"]
+        else:
+            sep1 = ""
+            sep2 = ""
 
-		self.email = Email(email).addr
+        # first name
+        if usernameFormat["first"] == "full":
+            first = self.first.lower()
+        elif usernameFormat["first"] == "initial":
+            first = self.first.lower()[0]
+        else:
+            first = ""
+            sep1 = ""
 
+        # middle name
+        if usernameFormat["middle"] == "full":
+            middle = self.middleName.lower()
+        elif usernameFormat["middle"] == "initial":
+            middle = self.middleInitial.lower()
+        else:
+            middle = ""
+            sep2 = ""
 
-		if phone != '':
-			self.phone = Phone(phone).pretty
-		else:
-			self.phone = ''
+        # first name
+        if usernameFormat["last"] == "full":
+            last = self.last.lower()
+        elif usernameFormat["last"] == "initial":
+            last = self.last.lower()[0]
+        else:
+            last = ""
 
-	
-	def __str__(self) -> str:
-		return self.username
+        return f"{first}{sep1}{middle}{sep2}{last}"
 
+    def fullName(self) -> str:
+        if self.middleInitial != "":
+            if self.middleName != "":
+                return f"{self.first} {self.middleName} {self.last}"
+            else:
+                return f"{self.first} {self.middleInitial}. {self.last}"
+        else:
+            return f"{self.first} {self.last}"
 
-	def _makeUsername(self) -> str:
-		# separator
-		if usernameFormat['separator'] != '':
-			sep1 = usernameFormat['separator']
-			sep2 = usernameFormat['separator']
-		else:
-			sep1 = ''
-			sep2 = ''
-		
-		# first name
-		if usernameFormat['first'] == 'full':
-			first = self.first.lower()
-		elif usernameFormat['first'] == 'initial':
-			first = self.first.lower()[0]
-		else:
-			first = ''
-			sep1 = ''
-
-		# middle name
-		if usernameFormat['middle'] == 'full':
-			middle = self.middleName.lower()
-		elif usernameFormat['middle'] == 'initial':
-			middle = self.middleInitial.lower()
-		else:
-			middle = ''
-			sep2 = ''
-
-		# first name
-		if usernameFormat['last'] == 'full':
-			last = self.last.lower()
-		elif usernameFormat['last'] == 'initial':
-			last = self.last.lower()[0]
-		else:
-			last = ''
-
-		return f'{first}{sep1}{middle}{sep2}{last}'
-
-
-	def fullName(self) -> str:
-		if self.middleInitial != '':
-			if self.middleName != '':
-				return f'{self.first} {self.middleName} {self.last}'
-			else:
-				return f'{self.first} {self.middleInitial}. {self.last}'
-		else:
-			return f'{self.first} {self.last}'
-		
-	
-	def preview(self) -> str:
-		prettyGroups = ', '.join(self.groups)
-		return f"""\
+    def preview(self) -> str:
+        prettyGroups = ", ".join(self.groups)
+        return f"""\
 Full name: {self.fullName()}
 Username: {self.username}
 Groups: {prettyGroups}
 Email: {self.email}
 Phone: {self.phone}
 """
-	
 
-	def createAuthInviteData(self) -> dict:
-		return {
-			'name': self.fullName(),
-			'username': self.username,
-			'email': self.email,
-			'phone': self.phone,
-			'groups_to_add': self.groups,
-			'invite_expires': ''
-		}
+    def createAuthInviteData(self) -> dict:
+        return {
+            "name": self.fullName(),
+            "username": self.username,
+            "email": self.email,
+            "phone": self.phone,
+            "groups_to_add": self.groups,
+            "invite_expires": "",
+        }

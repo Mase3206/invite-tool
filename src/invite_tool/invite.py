@@ -8,26 +8,25 @@ from invite_tool.user import HomelabUser
 
 
 class InviteEmail:
-	def __init__(
-			self, 
-			user: HomelabUser, 
-			fromAddress: str, 
-			invite: Invitation, 
-			flow: Flow,
-			authURL: str
-		):
+    def __init__(
+        self,
+        user: HomelabUser,
+        fromAddress: str,
+        invite: Invitation,
+        flow: Flow,
+        authURL: str,
+    ):
+        self.user = user
+        # self.username = user.username
+        # self.name = user.fullName()
+        # self.toAddr = user.email
+        self.fromAddr = fromAddress
+        self.expires = invite.expires
+        # self.pk = invite.pk
+        # self.slug = flow.slug
+        self.inviteLink = f"https://{authURL}/if/flow/{flow.slug}/?itoken={invite.pk}"
 
-		self.user = user
-		# self.username = user.username
-		# self.name = user.fullName()
-		# self.toAddr = user.email
-		self.fromAddr = fromAddress
-		self.expires = invite.expires
-		# self.pk = invite.pk
-		# self.slug = flow.slug
-		self.inviteLink = f'https://{authURL}/if/flow/{flow.slug}/?itoken={invite.pk}'
-
-		self.message = f"""\
+        self.message = f"""\
 Subject: Welcome to das homelab!
 To: {self.user.fullName()} <{self.user.email}>
 From: Authentik on das homelab <{self.fromAddr}>
@@ -68,30 +67,27 @@ Expires: {str(self.expires)}
 Happy Homelabbing!
 """
 
-	
-	def plexInfo(self):
-		if "plexuser" in self.user.groups:
-			return "- Plex (plex.noahsroberts.com or plex.tv) - self-hosted media server, supporting movies, TV, and music\n\nNote: You were added as a Plex user, but giving you access to the Plex server is not automatic. You will need to create a Plex account and let Noah know what what email you used to make it. Then he can send you an invite which will go to your email inbox. Once you accept it, you *should* have access to the Plex server. It may be worth doing this with Noah, just to make sure it actually works -- because sometimes it doesn't.\n"
-		else:
-			return ""
-		
-	
-	def adminInfo(self):
-		if "admin" in self.user.groups:
-			return "\n\nAs you are an admin, please note the following information: \n- Please set up two-factor authentication as soon as possible. Information on how to do so is available here: https://wiki.noahsroberts.com/books/authentik/page/2fa-setup \n- Accessing some administrative areas, such as Proxmox and TrueNAS, require Twingate to connect, as they are too sensitive to expose to the Internet. \n- If you are trying to sign into Proxmox but it fails, let Noah know as soon as possible, as this likely means he hasn't set up your user in Proxmox yet.\n"
-		else:
-			return ""
+    def plexInfo(self):
+        if "plexuser" in self.user.groups:
+            return "- Plex (plex.noahsroberts.com or plex.tv) - self-hosted media server, supporting movies, TV, and music\n\nNote: You were added as a Plex user, but giving you access to the Plex server is not automatic. You will need to create a Plex account and let Noah know what what email you used to make it. Then he can send you an invite which will go to your email inbox. Once you accept it, you *should* have access to the Plex server. It may be worth doing this with Noah, just to make sure it actually works -- because sometimes it doesn't.\n"
+        else:
+            return ""
 
-	
-	def mailtrapSend(self, apiKey: str):
-		with smtplib.SMTP("live.smtp.mailtrap.io", 587) as server:
-			server.starttls()
-			server.login("api", apiKey)
-			server.sendmail(self.fromAddr, self.user.email, self.message)
+    def adminInfo(self):
+        if "admin" in self.user.groups:
+            return "\n\nAs you are an admin, please note the following information: \n- Please set up two-factor authentication as soon as possible. Information on how to do so is available here: https://wiki.noahsroberts.com/books/authentik/page/2fa-setup \n- Accessing some administrative areas, such as Proxmox and TrueNAS, require Twingate to connect, as they are too sensitive to expose to the Internet. \n- If you are trying to sign into Proxmox but it fails, let Noah know as soon as possible, as this likely means he hasn't set up your user in Proxmox yet.\n"
+        else:
+            return ""
 
+    def mailtrapSend(self, apiKey: str):
+        with smtplib.SMTP("live.smtp.mailtrap.io", 587) as server:
+            server.starttls()
+            server.login("api", apiKey)
+            server.sendmail(self.fromAddr, self.user.email, self.message)
 
-	
-	def send(self, mailtrapApiKey: str):
-		self.mailtrapSend(mailtrapApiKey)
-		if "plexuser" in self.user.groups:
-			print(f"You'll need to manually invite {self.user.first} to Plex once they create a Plex account.")
+    def send(self, mailtrapApiKey: str):
+        self.mailtrapSend(mailtrapApiKey)
+        if "plexuser" in self.user.groups:
+            print(
+                f"You'll need to manually invite {self.user.first} to Plex once they create a Plex account."
+            )

@@ -10,118 +10,107 @@ from authentik_client.models.invitation_request import InvitationRequest
 
 
 class Authentik:
-	def __init__(self, authConf: dict[str, str]):
-		authConf = authConf
-		# configure API client
-		self.conf = ac.Configuration(
-			host = f'https://{authConf['url']}/api/v3', 
-			access_token = authConf['key']
-		)
+    def __init__(self, authConf: dict[str, str]):
+        authConf = authConf
+        # configure API client
+        self.conf = ac.Configuration(
+            host=f"https://{authConf['url']}/api/v3", access_token=authConf["key"]
+        )
 
-		# set api key
-		self.conf.api_key['authentik'] = authConf['key']
+        # set api key
+        self.conf.api_key["authentik"] = authConf["key"]
 
+        APIClient = ac.ApiClient(self.conf)
 
-		APIClient = ac.ApiClient(self.conf)
+        # create API objects for each API classification
+        # admin = ac.AdminApi(APIClient)
+        # authenticators = ac.AuthenticatorsApi(APIClient)
+        self.core = ac.CoreApi(APIClient)
+        # crypto = ac.CryptoApi(APIClient)
+        # enterprise = ac.EnterpriseApi(APIClient)
+        # events = ac.EventsApi(APIClient)
+        self.flows = ac.FlowsApi(APIClient)
+        # managed = ac.ManagedApi(APIClient)
+        # oauth2 = ac.Oauth2Api(APIClient)
+        # outposts = ac.OutpostsApi(APIClient)
+        # policies = ac.PoliciesApi(APIClient)
+        # propertyMappings = ac.PropertymappingsApi(APIClient)
+        # providers = ac.ProvidersApi(APIClient)
+        # RAC = ac.RacApi(APIClient)
+        # RBAC = ac.RbacApi(APIClient)
+        # root = ac.RootApi(APIClient)
+        # schema = ac.SchemaApi(APIClient)
+        # sources = ac.SourcesApi(APIClient)
+        self.stages = ac.StagesApi(APIClient)
+        # tenants = ac.TenantsApi(APIClient)
 
-		# create API objects for each API classification
-		# admin = ac.AdminApi(APIClient)
-		# authenticators = ac.AuthenticatorsApi(APIClient)
-		self.core = ac.CoreApi(APIClient)
-		# crypto = ac.CryptoApi(APIClient)
-		# enterprise = ac.EnterpriseApi(APIClient)
-		# events = ac.EventsApi(APIClient)
-		self.flows = ac.FlowsApi(APIClient)
-		# managed = ac.ManagedApi(APIClient)
-		# oauth2 = ac.Oauth2Api(APIClient)
-		# outposts = ac.OutpostsApi(APIClient)
-		# policies = ac.PoliciesApi(APIClient)
-		# propertyMappings = ac.PropertymappingsApi(APIClient)
-		# providers = ac.ProvidersApi(APIClient)
-		# RAC = ac.RacApi(APIClient)
-		# RBAC = ac.RbacApi(APIClient)
-		# root = ac.RootApi(APIClient)
-		# schema = ac.SchemaApi(APIClient)
-		# sources = ac.SourcesApi(APIClient)
-		self.stages = ac.StagesApi(APIClient)
-		# tenants = ac.TenantsApi(APIClient)
-	
-	def fetchGroupList(self) -> list[str]:
-		# grab results section of the raw ouput
-		raw = self.core.core_groups_list().results
+    def fetchGroupList(self) -> list[str]:
+        # grab results section of the raw ouput
+        raw = self.core.core_groups_list().results
 
-		# make a list of all the group names
-		groups = [g.name for g in raw]
-		# print(groups)
-		return groups
+        # make a list of all the group names
+        groups = [g.name for g in raw]
+        # print(groups)
+        return groups
 
+    def fetchUserList(self) -> list[str]:
+        # grab results section of the raw ouput
+        raw = self.core.core_users_list().results
 
+        # make a list of usernames from the authentik_client.User object
+        users = [u.username for u in raw]
+        # print(users)
+        return users
 
-	def fetchUserList(self) -> list[str]:
-		# grab results section of the raw ouput
-		raw = self.core.core_users_list().results
+    def fetchInviteFlows(self) -> list[Flow]:
+        raw: list[Flow] = self.flows.flows_instances_list().results
+        enrollmentFlows = []
 
-		# make a list of usernames from the authentik_client.User object
-		users = [u.username for u in raw]
-		# print(users)
-		return users
+        for flow in raw:
+            if flow.designation == FlowDesignationEnum.ENROLLMENT:
+                enrollmentFlows.append(flow)
 
+        # a: Flow = enrollmentFlows[0]
 
+        return enrollmentFlows
 
-	def fetchInviteFlows(self) -> list[Flow]:
-		raw: list[Flow] = self.flows.flows_instances_list().results
-		enrollmentFlows = []
+    def shiftDate(self, ref: datetime.datetime, days: int) -> datetime.datetime:
+        return ref + datetime.timedelta(days=days)
 
-		for flow in raw:
-			if flow.designation == FlowDesignationEnum.ENROLLMENT:
-				enrollmentFlows.append(flow)
+    def fetchExistingInvites(self) -> list[str]:
+        """
+        Fetches existing, unused invites.
+        """
 
-		a: Flow = enrollmentFlows[0]
+        raw: list[Invitation] = self.stages.stages_invitation_invitations_list().results
 
-		return enrollmentFlows
+        names = [a.name for a in raw]
+        return names
 
+    def inviteExists(self, user):
+        existing = self.fetchExistingInvites()
+        for a in existing:
+            if a[:-7] == user.username:
+                return True
+            else:
+                return False
 
+        if len(existing) == 0:
+            return False
 
-	def shiftDate(self, ref: datetime.datetime, days: int) -> datetime.datetime:	
-		return ref + datetime.timedelta(days=days)
+    def createInvite(self, user, flow: Flow):
+        today = datetime.datetime.today()
+        expires = self.shiftDate(today, +14)
 
+        data = user.createAuthInviteData()
+        data["invite_expires"] = str(expires)
 
-	def fetchExistingInvites(self) -> list[str]:
-		"""
-		Fetches existing, unused invites.
-		"""
+        invite = InvitationRequest(
+            name=f"{user.username}-invite",
+            expires=expires,
+            fixed_data=data,
+            single_use=True,
+            flow=flow.pk,
+        )
 
-		raw: list[Invitation] = self.stages.stages_invitation_invitations_list().results
-
-		names = [a.name for a in raw]
-		return names
-		
-
-	def inviteExists(self, user):
-		existing = self.fetchExistingInvites()
-		for a in existing:
-			if a[:-7] == user.username:
-				return True
-			else:
-				return False
-		
-		if len(existing) == 0:
-			return False
-
-
-	def createInvite(self, user, flow: Flow):
-		today = datetime.datetime.today()
-		expires = self.shiftDate(today, +14)
-
-		data = user.createAuthInviteData()
-		data['invite_expires'] = str(expires)
-
-		invite = InvitationRequest(
-			name=f'{user.username}-invite',
-			expires=expires,
-			fixed_data=data,
-			single_use=True,
-			flow=flow.pk,
-		)
-
-		return self.stages.stages_invitation_invitations_create(invite)
+        return self.stages.stages_invitation_invitations_create(invite)

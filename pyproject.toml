@@ -7,11 +7,12 @@ authors = [
 ]
 license = {text = "GPL-3.0-or-later"}
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 dependencies = [
     "pyyaml (>=6.0.2,<7.0.0)",
     "authentik-client (>=2025.6.4.post1753714896,<2026.0.0)",
-    "mailtrap (>=2.1.0,<3.0.0)"
+    "mailtrap (>=2.1.0,<3.0.0)",
+    "pmenu @ git+https://git.dashomelab.org/pasilan/pmenu.git"
 ]
 
 [tool.poetry]
